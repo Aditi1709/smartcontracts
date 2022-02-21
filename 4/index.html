@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Album Dashboard</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script src="./node_modules/web3/dist/web3.min.js"></script>
+
+</head>
+
+<body>
+	<div class="container">
+        <h1>GitToken</h1>
+		<!--Display a spinner while waiting for information-->
+		<img id="loader" src="ajax-loader.gif">
+		<!--Status information coming from contract events-->		
+		<h2>Status Message:<br/></h2>		
+		<h2 id="status"></h2>
+		<!--Get the Album Title-->
+		<!--Get the number of amounteth on the album-->
+        <label for="amounteth" class="col-lg-2 control-label">Amount</label>
+        <input id="amounteth" type="text">
+		<!--Use this information to update the current album-->
+        <button id="buy">Buy Ether</button>
+        <label for="github_user" class="col-lg-2 control-label">Github UserId</label>
+        <input id="github_user" type="text">
+		<!--Use this information to update the current user's favorite album-->
+		<button id="gitbutton">Connect to github</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+
+    <script>
+
+	// Update these variables with YOUR account number and contract address
+	var myAccountNumber = '0x617c33A507D3ee94A3D2704eee8A4F33A6382dE2';
+	var myContractAddress = '0x4724A7099BC9d6658972A59995e59A6F05D4B42D';
+
+	// Create a new web3 reference
+	let web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:7545'))
+
+	// Check your account balance, display the result
+	web3.eth.getBalance(myAccountNumber).then(balance => console.log(balance));
+
+	// Build a reference to the smart contract.
+	var albumContract = new web3.eth.Contract([
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "albumEvent_Description",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "albumEvent_Artist",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "albumEvent_Title",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "albumEvent_amounteth",
+				"type": "uint256"
+			}
+		],
+		"name": "albumEvent",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "errorEvent_Description",
+				"type": "string"
+			}
+		],
+		"name": "errorEvent",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "contractAuthor",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "currentAlbum",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "artist",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "albumTitle",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amounteth",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getCurrentAlbum",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getUsersFavoriteAlbum",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_artist",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_albumTitle",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_amounteth",
+				"type": "uint256"
+			}
+		],
+		"name": "setCurrentAlbum",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_artist",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_albumTitle",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_amounteth",
+				"type": "uint256"
+			}
+		],
+		"name": "setUsersFavoriteAlbum",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "userAlbums",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "artist",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "albumTitle",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amounteth",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]);
+	albumContract.options.address = myContractAddress;
+
+	// Display contract info for confirmation	
+	console.log(album);
+
+	// Display album information.
+	// albumContract.methods.getCurrentAlbum().call(function (error, result) {
+	// 	// Display album artist, title, and amounteth
+	// 	if (!error) {
+	// 		$("#album").html(result[0] + ' - ' + result[1] + ' (' + result[2] + ' amounteth)');
+	// 		console.log(result);
+	// 	} else
+	// 		console.error(error);
+	// });
+
+	// 	// Display current user's favorite album information.
+	// albumContract.methods.getUsersFavoriteAlbum().call(function (error, result) {
+	// 	// Display album artist, title, and amounteth
+	// 	if (!error) {
+	// 		$("#userAlbum").html(result[0] + ' - ' + result[1] + ' (' + result[2] + ' amounteth)');
+	// 		console.log("RESULT",result);
+	// 	} else
+	// 		console.error(error);
+	// });
+
+	albumContract.events.albumEvent(
+		function(error, result){
+			if (!error) {
+				$("#loader").hide();
+				$("#status").html(result.returnValues.albumEvent_Description + '<br/>' + 
+					'ALBUM: ' + result.returnValues.albumEvent_Title +  '<br/>' + 
+					'ARTIST: ' + result.returnValues.albumEvent_Artist +  '<br/>' + 
+					result.returnValues.albumEvent_amounteth + ' amounteth.');
+			} else {
+				$("#loader").hide();
+				console.log(error);
+			} // else
+		} // function(error, result)
+	); // albumContract.albumEvent
+
+	albumContract.events.errorEvent(
+		function(error, result){
+			$("#loader").hide();
+			$("#status").html('<h1>ERROR: </h1><br/>' + result.returnValues.errorEvent_Description);
+		} // function(error, result)
+	); // albumContract.errorEvent
+
+
+		// Update the current album info using the user-provided information
+	$("#buy").click(function () {
+
+		var albumamounteth = $("#amounteth").val();
+		console.log("THE NUMBER OF amounteth IS: " + albumamounteth);
+		
+		// Show the loading icon. This icon will be hidden when the albumEvent event is raised by the contract.
+		$("#loader").show();
+		// Pass collected info to SetAlbum contract method
+		albumContract.methods.setCurrentAlbum(theAlbumArtist, thegithub_user, albumamounteth).send({gas: 550000, from:myAccountNumber});
+	});
+
+	$("#gitbutton").click(function () {
+		// Get album info from the UI
+		var theAlbumArtist = $("#albumArtist").val();
+		console.log("THE ALBUM ARTIST IS: " + theAlbumArtist);
+
+		var thegithub_user = $("#github_user").val();
+		console.log("THE ALBUM NAME IS: " + thegithub_user);
+
+		var albumamounteth = $("#amounteth").val();
+		console.log("THE NUMBER OF amounteth IS: " + albumamounteth);
+		
+		// Show the loading icon. This icon will be hidden when the albumEvent event is raised by the contract.
+		$("#loader").show();
+
+		// Pass collected info to SetAlbum contract method
+		albumContract.methods.setUsersFavoriteAlbum(theAlbumArtist, thegithub_user, albumamounteth).send({gas: 550000, from:myAccountNumber});
+	});
+
+    </script>
+
+</body>
+
+</html>
+

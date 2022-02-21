@@ -26,7 +26,7 @@
             gasPrice: '30000000000'
         })
         console.log('Contract deployed at address: ', newContractInstance.options.address)
-        var owner = newContractInstance.owner.call();
+        var owner = accounts[0];
         console.log('Owner of the contract: ', owner)
 
     } catch (e) {

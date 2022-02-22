@@ -9,6 +9,8 @@ contract StorageTest {
     function beforeAll() public {
         // Here should instantiate tested contract
         Assert.equal(uint(1), uint(1), "1 should be equal to 1");
+        Assert.greaterThan(uint(2), uint(1), "2 should be greater than to 1");
+        Assert.lesserThan(uint(2), uint(3), "2 should be lesser than to 3");
     }
     function valueIsSet() public {
         temp.store(1);
